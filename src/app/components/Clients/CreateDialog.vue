@@ -14,6 +14,17 @@
           v-model="expiresAt"
           :label="$t('client.expireDate')"
         />
+        <FormNullNumberField
+          id="quotaLimit"
+          v-model="quotaLimitGb"
+          :label="$t('client.quotaLimit')"
+          :description="$t('client.quotaLimitDesc')"
+        />
+        <ClientsQuotaPeriodField
+          id="quotaPeriod"
+          v-model="quotaPeriod"
+          :disabled="quotaLimitGb === null"
+        />
       </div>
     </template>
     <template #actions>
@@ -32,9 +43,14 @@
 <script lang="ts" setup>
 const name = ref<string>('');
 const expiresAt = ref<string | null>(null);
+const quotaLimitGb = ref<number | null>(null);
+const quotaPeriod = ref<'none' | 'day' | 'week' | 'month'>('month');
 const clientsStore = useClientsStore();
 
 const { t } = useI18n();
+
+// GB like the rest of the UI (see `bytes()`)
+const GB = 1_000_000_000;
 
 defineProps<{ triggerClass?: string }>();
 
@@ -43,10 +59,19 @@ function resetOnOpen(open: boolean) {
 
   name.value = '';
   expiresAt.value = null;
+  quotaLimitGb.value = null;
+  quotaPeriod.value = 'month';
 }
 
 function createClient() {
-  return _createClient({ name: name.value, expiresAt: expiresAt.value });
+  const quotaLimit =
+    quotaLimitGb.value === null ? null : Math.round(quotaLimitGb.value * GB);
+  return _createClient({
+    name: name.value,
+    expiresAt: expiresAt.value,
+    quotaLimit,
+    quotaPeriod: quotaLimit === null ? 'none' : quotaPeriod.value,
+  });
 }
 
 const _createClient = useSubmit(

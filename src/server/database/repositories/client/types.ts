@@ -85,9 +85,23 @@ const serverAllowedIps = z.array(AddressSchema, {
   message: t('zod.client.serverAllowedIps'),
 });
 
+const quotaLimit = z
+  .number({ message: t('zod.client.quotaLimit') })
+  .int(t('zod.client.quotaLimit'))
+  .min(1, t('zod.client.quotaLimit'))
+  .max(Number.MAX_SAFE_INTEGER, t('zod.client.quotaLimit'))
+  .nullable();
+
+const quotaPeriod = z.enum(['none', 'day', 'week', 'month'], {
+  message: t('zod.client.quotaPeriod'),
+});
+
 export const ClientCreateSchema = z.object({
   name: name,
   expiresAt: expiresAt,
+  // optional so existing API clients keep working
+  quotaLimit: quotaLimit.default(null),
+  quotaPeriod: quotaPeriod.default('none'),
 });
 
 export type ClientCreateType = z.infer<typeof ClientCreateSchema>;
@@ -140,15 +154,8 @@ export const ClientUpdateSchema = schemaForType<UpdateClientType>()(
 );
 
 export const ClientQuotaUpdateSchema = z.object({
-  quotaLimit: z
-    .number({ message: t('zod.client.quotaLimit') })
-    .int(t('zod.client.quotaLimit'))
-    .min(1, t('zod.client.quotaLimit'))
-    .max(Number.MAX_SAFE_INTEGER, t('zod.client.quotaLimit'))
-    .nullable(),
-  quotaPeriod: z.enum(['none', 'day', 'week', 'month'], {
-    message: t('zod.client.quotaPeriod'),
-  }),
+  quotaLimit: quotaLimit,
+  quotaPeriod: quotaPeriod,
 });
 
 export type ClientQuotaUpdateType = z.infer<typeof ClientQuotaUpdateSchema>;

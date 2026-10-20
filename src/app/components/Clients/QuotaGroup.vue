@@ -9,28 +9,11 @@
       :label="$t('client.quotaLimit')"
       :description="$t('client.quotaLimitDesc')"
     />
-    <div class="flex items-center">
-      <FormLabel for="quotaPeriod">
-        {{ $t('client.quotaPeriod') }}
-      </FormLabel>
-      <BaseTooltip :text="$t('client.quotaPeriodDesc')">
-        <IconsInfo class="size-4" />
-      </BaseTooltip>
-    </div>
-    <select
+    <ClientsQuotaPeriodField
       id="quotaPeriod"
       v-model="period"
       :disabled="limitGb === null"
-      class="rounded-lg border-2 border-gray-100 text-gray-500 focus:border-red-800 focus:outline-0 focus:ring-0 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
-    >
-      <option
-        v-for="option in periodOptions"
-        :key="option.value"
-        :value="option.value"
-      >
-        {{ option.label }}
-      </option>
-    </select>
+    />
     <FormInfoField
       v-if="client.quotaLimit !== null"
       id="quotaUsage"
@@ -100,13 +83,6 @@ watch(
   },
   { immediate: true }
 );
-
-const periodOptions = computed(() => [
-  { value: 'none', label: t('client.quotaPeriodNone') },
-  { value: 'day', label: t('client.quotaPeriodDay') },
-  { value: 'week', label: t('client.quotaPeriodWeek') },
-  { value: 'month', label: t('client.quotaPeriodMonth') },
-]);
 
 const usage = computed(() => {
   const { quotaUsed, quotaLimit, quotaExceeded } = props.client;

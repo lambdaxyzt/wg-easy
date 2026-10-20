@@ -174,7 +174,18 @@ export class ClientService {
     return this.#statements.findByIdPublic.execute({ id });
   }
 
-  async create({ name, expiresAt }: ClientCreateType) {
+  async create({ name, expiresAt, quotaLimit, quotaPeriod }: ClientCreateType) {
+    const now = new Date().toISOString();
+    const quota =
+      quotaLimit === null
+        ? {}
+        : {
+            quotaLimit,
+            quotaPeriod,
+            quotaAnchor: now,
+            quotaPeriodStart: now,
+          };
+
     const privateKey = await wg.generatePrivateKey();
     const publicKey = await wg.getPublicKey(privateKey);
     const preSharedKey = await wg.generatePreSharedKey();
@@ -231,6 +242,7 @@ export class ClientService {
           persistentKeepalive: clientConfig.defaultPersistentKeepalive,
           serverAllowedIps: [],
           enabled: true,
+          ...quota,
         })
         .returning({ clientId: client.id })
         .execute();

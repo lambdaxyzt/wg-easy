@@ -64,6 +64,21 @@ export const client = sqliteTable(
     dns: text({ mode: 'json' }).$type<string[]>(),
     serverEndpoint: text('server_endpoint'),
     enabled: int({ mode: 'boolean' }).notNull(),
+    // Traffic quota (RX + TX bytes). null = no quota
+    quotaLimit: int('quota_limit'),
+    quotaPeriod: text('quota_period', {
+      enum: ['none', 'day', 'week', 'month'],
+    })
+      .notNull()
+      .default('none'),
+    quotaUsed: int('quota_used').notNull().default(0),
+    // reset boundaries are computed from this anchor
+    quotaAnchor: text('quota_anchor'),
+    // start of the period quotaUsed belongs to
+    quotaPeriodStart: text('quota_period_start'),
+    quotaExceeded: int('quota_exceeded', { mode: 'boolean' })
+      .notNull()
+      .default(false),
     createdAt: text('created_at')
       .notNull()
       .default(sql`(CURRENT_TIMESTAMP)`),

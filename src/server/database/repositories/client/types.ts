@@ -33,10 +33,26 @@ export type CreateClientType = Omit<
   'createdAt' | 'updatedAt' | 'id'
 >;
 
+type QuotaFields =
+  | 'quotaLimit'
+  | 'quotaPeriod'
+  | 'quotaUsed'
+  | 'quotaAnchor'
+  | 'quotaPeriodStart'
+  | 'quotaExceeded';
+
+/** Quota fields are admin-only and updated through {@link ClientQuotaUpdateSchema} */
 export type UpdateClientType = Omit<
   CreateClientType,
-  'privateKey' | 'publicKey' | 'preSharedKey' | 'userId' | 'interfaceId'
+  | 'privateKey'
+  | 'publicKey'
+  | 'preSharedKey'
+  | 'userId'
+  | 'interfaceId'
+  | QuotaFields
 >;
+
+export type QuotaPeriod = ClientType['quotaPeriod'];
 
 const name = z
   .string({ message: t('zod.client.name') })
@@ -122,6 +138,20 @@ export const ClientUpdateSchema = schemaForType<UpdateClientType>()(
     dns: DnsSchema.nullable(),
   })
 );
+
+export const ClientQuotaUpdateSchema = z.object({
+  quotaLimit: z
+    .number({ message: t('zod.client.quotaLimit') })
+    .int(t('zod.client.quotaLimit'))
+    .min(1, t('zod.client.quotaLimit'))
+    .max(Number.MAX_SAFE_INTEGER, t('zod.client.quotaLimit'))
+    .nullable(),
+  quotaPeriod: z.enum(['none', 'day', 'week', 'month'], {
+    message: t('zod.client.quotaPeriod'),
+  }),
+});
+
+export type ClientQuotaUpdateType = z.infer<typeof ClientQuotaUpdateSchema>;
 
 const clientId = z.coerce.number({ message: t('zod.client.id') });
 

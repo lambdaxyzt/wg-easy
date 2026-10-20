@@ -192,6 +192,7 @@
               :description="$t('awg.disableCookiesDescription')"
             />
           </FormGroup>
+          <ClientsQuotaGroup v-if="isAdmin" :client="data" @updated="revert" />
           <FormGroup>
             <FormHeading :description="$t('client.hooksDescription')">
               {{ $t('client.hooks') }}
@@ -258,6 +259,13 @@
 
 <script lang="ts" setup>
 const globalStore = useGlobalStore();
+const authStore = useAuthStore();
+
+const isAdmin = computed(
+  () =>
+    authStore.userData !== null &&
+    hasPermissions(authStore.userData, 'admin', 'any')
+);
 
 const route = useRoute();
 const id = route.params.id as string;

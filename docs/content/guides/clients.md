@@ -87,6 +87,28 @@ The DNS server that the client will use.
 - **MTU**: The maximum transmission unit for the client.
 - **Persistent Keepalive**: The interval for sending keepalive packets to the server.
 
+## Traffic Quota
+
+/// note | Attention
+
+Only admins can see and change this section. Users can see their usage on the client card.
+
+///
+
+Limits how much traffic (upload + download) a client may use per period.
+
+- **Limit (GB)**: Allowed traffic in GB (1 GB = 1,000,000,000 bytes). Leave empty for unlimited.
+- **Reset Period**: `Never`, `Daily`, `Weekly` or `Monthly`. Periods start when the quota is first set and reset at the same time of day, in the server's time zone (set `TZ` on the container). Monthly resets on the 29th–31st happen on the last day of shorter months.
+- **Reset Usage**: Sets the used traffic of the current period back to 0 and lets the client connect again. The reset schedule does not change.
+
+**Behavior:**
+
+- Usage is counted from the WireGuard transfer counters every 10 seconds, so a client can go slightly over the limit (at most 10 seconds of traffic).
+- When the limit is reached, the client is removed from the WireGuard configuration and can no longer connect. **Enabled** stays on; the client card shows "Quota exceeded".
+- The client can connect again when a new period starts, when an admin resets the usage, or when the limit is raised or removed.
+- Changing only the limit keeps the current usage. Changing the reset period starts a new period from 0.
+- Usage is stored in the database and survives restarts.
+
 ## Hooks
 
 This can only be used for clients that use `wg-quick`. Setting this will throw a error when importing the config on other clients.

@@ -132,7 +132,24 @@
     "firewallIps": "Firewall Allowed IPs",
     "firewallIpsDesc": "Destination IPs/CIDRs this client can access (server-side enforcement). Leave empty to use Allowed IPs. Supports optional port and protocol filtering. See docs for syntax.",
     "downloadPng": "Download PNG",
-    "copyPng": "Copy PNG"
+    "copyPng": "Copy PNG",
+    "quota": "Traffic Quota",
+    "quotaDesc": "Total upload + download allowed per period. When it is used up, the client is disconnected until the period resets or an admin resets it.",
+    "quotaLimit": "Limit (GB)",
+    "quotaLimitDesc": "1 GB = 1,000,000,000 bytes. Leave empty for unlimited",
+    "quotaPeriod": "Reset Period",
+    "quotaPeriodDesc": "Usage resets at the same time as the quota was set, in the server's time zone",
+    "quotaPeriodNone": "Never",
+    "quotaPeriodDay": "Daily",
+    "quotaPeriodWeek": "Weekly",
+    "quotaPeriodMonth": "Monthly",
+    "quotaUsage": "Used",
+    "quotaUsageValue": "{used} of {limit}",
+    "quotaSave": "Save Quota",
+    "quotaReset": "Reset Usage",
+    "quotaResetDialog": "Reset the used traffic of {name} to 0? The client will be able to connect again.",
+    "quotaExceeded": "Quota exceeded",
+    "quotaNextReset": "Next reset {date}"
   },
   "dialog": {
     "change": "Change",
@@ -221,7 +238,9 @@
       "address6": "IPv6 Address",
       "serverAllowedIps": "Server Allowed IPs",
       "firewallIps": "Firewall Allowed IPs",
-      "firewallIpsInvalid": "Invalid firewall IP entry. See docs for supported syntax."
+      "firewallIpsInvalid": "Invalid firewall IP entry. See docs for supported syntax.",
+      "quotaLimit": "Quota limit must be a positive whole number of bytes",
+      "quotaPeriod": "Quota period must be none, day, week or month"
     },
     "user": {
       "username": "Username",

@@ -6,6 +6,7 @@ import type {
   ClientCreateFromExistingType,
   ClientCreateType,
   ClientQueryType,
+  ClientQuotaUpdateType,
   UpdateClientType,
 } from './types';
 
@@ -265,6 +266,103 @@ export class ClientService {
       }
 
       await tx.update(client).set(data).where(eq(client.id, id)).execute();
+    });
+  }
+
+  /**
+   * Set or remove a client's traffic quota.
+   *
+   * Usage and the reset schedule only start over when the quota is new or its
+   * period changes, so editing the limit never skips or triggers a reset.
+   */
+  setQuota(
+    id: ID,
+    { quotaLimit, quotaPeriod }: ClientQuotaUpdateType,
+    now = new Date()
+  ) {
+    return this.#db.transaction(async (tx) => {
+      const current = await tx.query.client
+        .findFirst({ where: eq(client.id, id) })
+        .execute();
+
+      if (!current) {
+        throw new Error('Client not found');
+      }
+
+      if (quotaLimit === null) {
+        await tx
+          .update(client)
+          .set({
+            quotaLimit: null,
+            quotaPeriod: 'none',
+            quotaUsed: 0,
+            quotaAnchor: null,
+            quotaPeriodStart: null,
+            quotaExceeded: false,
+          })
+          .where(eq(client.id, id))
+          .execute();
+        return;
+      }
+
+      const restart =
+        current.quotaLimit === null || current.quotaPeriod !== quotaPeriod;
+      const quotaUsed = restart ? 0 : current.quotaUsed;
+
+      await tx
+        .update(client)
+        .set({
+          quotaLimit,
+          quotaPeriod,
+          quotaUsed,
+          quotaAnchor: restart ? now.toISOString() : current.quotaAnchor,
+          quotaPeriodStart: restart
+            ? now.toISOString()
+            : current.quotaPeriodStart,
+          quotaExceeded: quotaUsed >= quotaLimit,
+        })
+        .where(eq(client.id, id))
+        .execute();
+    });
+  }
+
+  /**
+   * Zero the usage and unblock. Pass `periodStart` when a new period begins;
+   * a manual reset keeps the current period.
+   */
+  resetQuotaUsage(id: ID, periodStart?: Date) {
+    return this.#db
+      .update(client)
+      .set({
+        quotaUsed: 0,
+        quotaExceeded: false,
+        ...(periodStart && { quotaPeriodStart: periodStart.toISOString() }),
+      })
+      .where(eq(client.id, id))
+      .execute();
+  }
+
+  setQuotaExceeded(id: ID, quotaExceeded: boolean) {
+    return this.#db
+      .update(client)
+      .set({ quotaExceeded })
+      .where(eq(client.id, id))
+      .execute();
+  }
+
+  /**
+   * Add transferred bytes to each client's quota usage in one transaction.
+   *
+   * Uses raw SQL so the frequent increments don't bump `updatedAt`.
+   */
+  addQuotaUsage(usage: { id: ID; bytes: number }[]) {
+    if (usage.length === 0) return;
+    return this.#db.transaction(async (tx) => {
+      for (const { id, bytes } of usage) {
+        await tx.run(
+          sql`UPDATE clients_table SET quota_used = quota_used + ${bytes} WHERE id = ${id}`
+        );
+      }
     });
   }
 

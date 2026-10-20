@@ -44,7 +44,7 @@
 const name = ref<string>('');
 const expiresAt = ref<string | null>(null);
 const quotaLimitGb = ref<number | null>(null);
-const quotaPeriod = ref<'none' | 'day' | 'week' | 'month'>('month');
+const quotaPeriod = ref<'none' | 'day' | 'week' | 'month'>('none');
 const clientsStore = useClientsStore();
 
 const { t } = useI18n();
@@ -60,7 +60,7 @@ function resetOnOpen(open: boolean) {
   name.value = '';
   expiresAt.value = null;
   quotaLimitGb.value = null;
-  quotaPeriod.value = 'month';
+  quotaPeriod.value = 'none';
 }
 
 function createClient() {
